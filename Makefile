@@ -7,7 +7,11 @@ VERSION := 3
 ifeq ($(VERSION),2)
 PAD = 0xc000
 else
+ifeq ($(VERSION),3)
 PAD = 0x10000
+else
+PAD = 0x12000
+endif
 endif
 
 LD_SCRIPT = avd-cm3.ld

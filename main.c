@@ -5,8 +5,10 @@ typedef volatile unsigned int u32;
 
 #if VERSION == 2
 #define SP 0x1000c000
-#else
+#elif VERSION == 3
 #define SP 0x10010000
+#else
+#define SP 0x10012000
 #endif
 
 #define NVIC_ISER m(0xe000e100)
@@ -35,13 +37,28 @@ typedef volatile unsigned int u32;
 #define MBOX1_EMPTY BIT(2)
 #define MBOX1_NOT_EMPTY BIT(3)
 
+#if VERSION == 2
+#define VP_OFFSET 0x60
+#define SUBMIT_NUMBER 5
+#elif VERSION == 3
+#define VP_OFFSET 0x124
+#define SUBMIT_NUMBER 9
+#else
+#define VP_OFFSET 0x194
+#define SUBMIT_NUMBER 13
+#endif
+
+#if VERSION < 4
 #define DECODE_CTRL_BASE 0x40100000
+#else
+#define DECODE_CTRL_BASE 0x41100000
+#endif
 
 #if VERSION == 2
 /* everything is packed into one register */
-#define DECODE_STATUS(n) m(DECODE_CTRL_BASE + 0x60)
+#define DECODE_STATUS(n) m(DECODE_CTRL_BASE + VP_OFFSET)
 #else
-#define DECODE_STATUS(n) m(DECODE_CTRL_BASE + 0x124 + (n * 4))
+#define DECODE_STATUS(n) m(DECODE_CTRL_BASE + VP_OFFSET + (n * 4))
 #endif
 
 #define DECODE_STATUS_UNK BIT(0)
@@ -100,7 +117,12 @@ void systick(void) __attribute__((weak, alias("handler")));
 	/* IRQ(103) IRQ(104) IRQ(105) */ IRQ(106) IRQ(107)
 	/* IRQ(108) IRQ(109) IRQ(110) */ IRQ(111) IRQ(112)
 	/* IRQ(113) IRQ(114) IRQ(115) */ IRQ(116) IRQ(117)
-	/* IRQ(118) IRQ(119) IRQ(120) */ IRQ(121) IRQ(122) IRQ(123)
+	/* IRQ(118) IRQ(119) IRQ(120) */ IRQ(121) IRQ(122)
+
+	/* IRQ(123) IRQ(124) IRQ(125) */ IRQ(126) IRQ(127)
+	/* IRQ(128) IRQ(129) IRQ(130) */ IRQ(131) IRQ(132)
+	/* IRQ(133) IRQ(134) IRQ(135) */ IRQ(136) IRQ(137)
+	IRQ(138) IRQ(139) IRQ(140)
 #undef IRQ
 
 void clear(unsigned int n, unsigned int status) {
@@ -141,8 +163,8 @@ static void ppdone(u32 n)
 #define vdone(n, idx) irq(n) { vpdone(idx); }
 
 /* version 2? */
-void irq38(void) { clear(5, DECODE_STATUS_UNK); }
-void irq40(void) { ppdone(5); }
+void irq38(void) { clear(SUBMIT_NUMBER, DECODE_STATUS_UNK); }
+void irq40(void) { ppdone(SUBMIT_NUMBER); }
 
 unk(18, 0)
 error(19, 0)
@@ -160,9 +182,9 @@ unk(33, 0)
 error(34, 0)
 vdone(35, 0)
 
-/* version 3 */
-void irq62(void) { clear(9, DECODE_STATUS_UNK); }
-void irq64(void) { ppdone(9); }
+/* version 3+ */
+void irq62(void) { clear(SUBMIT_NUMBER, DECODE_STATUS_UNK); }
+void irq64(void) { ppdone(SUBMIT_NUMBER); }
 
 unk(78, 0)
 error(79, 0)
@@ -200,6 +222,18 @@ unk(118, 8)
 error(119, 8)
 vdone(120, 8)
 
+unk(123, 9)
+error(124, 9)
+vdone(125, 9)
+
+unk(128, 10)
+error(129, 10)
+vdone(130, 10)
+
+unk(133, 11)
+error(134, 11)
+vdone(135, 11)
+
 #undef irq
 #undef unk
 #undef error
@@ -232,16 +266,15 @@ static void (*const vector_table[])(void) = {
 	irq32, irq33, irq34, irq35, irq36, irq37, irq38, irq39, irq40, irq41,
 	irq42, irq43, irq44, irq45, irq46, irq47, irq48, irq49, irq50, irq51,
 	irq52, irq53, irq54, irq55, irq56, irq57, irq58, irq59, irq60, irq61,
-	irq62, irq63,
-#if VERSION > 2
-	irq64, irq65, irq66, irq67, irq68, irq69, irq70, irq71, irq72, irq73,
-	irq74, irq75, irq76, irq77, irq78, irq79, irq80, irq81, irq82, irq83,
-	irq84, irq85, irq86, irq87, irq88, irq89, irq90, irq91, irq92, irq93,
-	irq94, irq95, irq96, irq97, irq98, irq99, irq100, irq101, irq102, irq103,
-	irq104, irq105, irq106, irq107, irq108, irq109, irq110, irq111, irq112,
-	irq113, irq114, irq115, irq116, irq117, irq118, irq119, irq120, irq121,
-	irq122, irq123,
-#endif
+	irq62, irq63, irq64, irq65, irq66, irq67, irq68, irq69, irq70, irq71,
+	irq72, irq73, irq74, irq75, irq76, irq77, irq78, irq79, irq80, irq81,
+	irq82, irq83, irq84, irq85, irq86, irq87, irq88, irq89, irq90, irq91,
+	irq92, irq93, irq94, irq95, irq96, irq97, irq98, irq99, irq100, irq101,
+	irq102, irq103, irq104, irq105, irq106, irq107, irq108, irq109, irq110,
+	irq111, irq112, irq113, irq114, irq115, irq116, irq117, irq118, irq119,
+	irq120, irq121, irq122, irq123, irq124, irq125, irq126, irq127, irq128,
+	irq129, irq130, irq131, irq132, irq133, irq134, irq135, irq136, irq137,
+	irq138, irq139, irq140
 };
 
 void _start(void)
