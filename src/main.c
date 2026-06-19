@@ -1,3 +1,5 @@
+#include "tunable/tunable.h"
+
 typedef volatile unsigned int u32;
 
 #define BIT(nr) (1 << (nr))
@@ -6,6 +8,8 @@ typedef volatile unsigned int u32;
 #if VERSION == 2
 #define SP 0x1000c000
 #elif VERSION == 3
+#define SP 0x10010000
+#elif VERSION == 5 && TIER == 0
 #define SP 0x10010000
 #else
 #define SP 0x10012000
@@ -277,8 +281,23 @@ static void (*const vector_table[])(void) = {
 	irq138, irq139, irq140
 };
 
+void tunable_apply(const struct tunable *tunable)
+{
+	for (int i = 0; i < tunable->sz; ++i) {
+		u32 val, old_val;
+
+		old_val = *m(DECODE_CTRL_BASE + tunable->values[i].offset);
+		val = old_val & ~tunable->values[i].mask;
+		val |= tunable->values[i].value;
+		/* always write */
+		*m(DECODE_CTRL_BASE + tunable->values[i].offset) = val;
+	}
+}
+
 void _start(void)
 {
+	tunable_apply(&tunable);
+
 	for (int i = 0; i < 7; i++)
 		NVIC_ISER[i] = 0xffffffff;
 
