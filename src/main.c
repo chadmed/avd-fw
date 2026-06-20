@@ -5,11 +5,11 @@ typedef volatile unsigned int u32;
 #define BIT(nr) (1 << (nr))
 #define REG(addr) ((u32 *)(addr))
 
-#if VERSION == 2
+#if AVD_VER == 2
 #define SP 0x1000c000
-#elif VERSION == 3
+#elif AVD_VER == 3
 #define SP 0x10010000
-#elif VERSION == 5 && TIER == 0
+#elif AVD_VER == 5 && TIER == 0
 #define SP 0x10010000
 #else
 #define SP 0x10012000
@@ -41,10 +41,10 @@ typedef volatile unsigned int u32;
 #define MBOX1_EMPTY BIT(2)
 #define MBOX1_NOT_EMPTY BIT(3)
 
-#if VERSION == 2
+#if AVD_VER == 2
 #define VP_OFFSET 0x60
 #define SUBMIT_NUMBER 5
-#elif VERSION == 3
+#elif AVD_VER == 3
 #define VP_OFFSET 0x124
 #define SUBMIT_NUMBER 9
 #else
@@ -52,13 +52,13 @@ typedef volatile unsigned int u32;
 #define SUBMIT_NUMBER 13
 #endif
 
-#if VERSION < 4
+#if AVD_VER < 4
 #define DECODE_CTRL_BASE 0x40100000
 #else
 #define DECODE_CTRL_BASE 0x41100000
 #endif
 
-#if VERSION == 2
+#if AVD_VER == 2
 /* everything is packed into one register */
 #define DECODE_STATUS(n) REG(DECODE_CTRL_BASE + VP_OFFSET)
 #else
@@ -131,7 +131,7 @@ void systick(void) __attribute__((weak, alias("handler")));
 
 void clear(unsigned int n, unsigned int status) {
 	volatile u32 *reg = DECODE_STATUS(n);
-#if VERSION == 2
+#if AVD_VER == 2
 	/* packed into one register each status is shifted 5 up */
 	*reg = status << (n * 5);
 	while (*reg & (status << (n * 5)));
@@ -166,7 +166,7 @@ static void ppdone(u32 n)
 #define error(n, idx) irq(n) { err(idx); }
 #define vdone(n, idx) irq(n) { vpdone(idx); }
 
-/* version 2? */
+/* AVD_VER 2? */
 void irq38(void) { clear(SUBMIT_NUMBER, DECODE_STATUS_UNK); }
 void irq40(void) { ppdone(SUBMIT_NUMBER); }
 
@@ -186,7 +186,7 @@ unk(33, 0)
 error(34, 0)
 vdone(35, 0)
 
-/* version 3+ */
+/* AVD_VER 3+ */
 void irq62(void) { clear(SUBMIT_NUMBER, DECODE_STATUS_UNK); }
 void irq64(void) { ppdone(SUBMIT_NUMBER); }
 

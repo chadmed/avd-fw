@@ -1,21 +1,21 @@
 CC = clang
 OBJCOPY = llvm-objcopy
 
-VERSION := 3
-TIER := 1
+AVD_VER := 3
+AVD_TIER := 1
 
 # avd-version = 3 in device tree
-ifeq ($(VERSION),2)
+ifeq ($(AVD_VER),2)
 PAD = 0xc000
 endif
-ifeq ($(VERSION),3)
+ifeq ($(AVD_VER),3)
 PAD = 0x10000
 endif
-ifeq ($(VERSION),4)
+ifeq ($(AVD_VER),4)
 PAD = 0x12000
 endif
-ifeq ($(VERSION),5)
-ifeq ($(TIER),0)
+ifeq ($(AVD_VER),5)
+ifeq ($(AVD_TIER),0)
 PAD = 0x10000
 else
 PAD = 0x12000
@@ -25,12 +25,12 @@ endif
 LD_SCRIPT = avd-cm3.ld
 CFLAGS = -Wall -O2 -nostdlib \
 	 -mthumb -mcpu=cortex-m3 --target=arm-none-eabi \
-	 -DVERSION=$(VERSION) -DTIER=$(TIER)
+	 -DAVD_VER=$(AVD_VER) -DAVD_TIER=$(AVD_TIER)
 
-NAME = avd-fw-v$(VERSION)-t$(TIER)
+NAME = avd-fw-v$(AVD_VER)-t$(AVD_TIER)
 
 OBJECTS := main.o \
-	   tunable/tun-v$(VERSION)-t$(TIER).o
+	   tunable/tun-v$(AVD_VER)-t$(AVD_TIER).o
 
 BUILD_OBJS := $(patsubst %,build/%,$(OBJECTS))
 
