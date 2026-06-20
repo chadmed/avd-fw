@@ -1,5 +1,4 @@
 #include "avd.h"
-#include "tunable/tunable.h"
 
 void handler(void)
 {
@@ -214,22 +213,26 @@ static void (*const vector_table[])(void) = {
 	irq138, irq139, irq140
 };
 
-void tunable_apply(const struct tunable *tunable)
+void apply_tunables()
 {
-	for (int i = 0; i < tunable->sz; ++i) {
+	int n_tunables, i = 0;
+
+	n_tunables = sizeof(avd_tunables) / sizeof(struct tunable);
+
+	for (i = 0; i < n_tunables; i++) {
 		u32 val, old_val;
 
-		old_val = reg_read(DECODE_CTRL_BASE + tunable->values[i].offset);
-		val = old_val & ~tunable->values[i].mask;
-		val |= tunable->values[i].value;
+		old_val = reg_read(DECODE_CTRL_BASE + avd_tunables[i].off);
+		val = old_val & ~avd_tunables[i].mask;
+		val |= avd_tunables[i].val;
 		/* always write */
-		reg_write(DECODE_CTRL_BASE + tunable->values[i].offset, val);
+		reg_write(DECODE_CTRL_BASE + avd_tunables[i].off, val);
 	}
 }
 
 void _start(void)
 {
-	tunable_apply(&tunable);
+	apply_tunables();
 
 	for (int i = 0; i < 7; i++)
 		CM3_NVIC_ISER[i] = 0xffffffff;

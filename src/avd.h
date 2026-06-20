@@ -4,5 +4,6 @@
 #include "util.h"
 
 #include "hw/reg/reg.h"
+#include "hw/tunables/tunables.h"
 
 #endif /* __AVD_H__ */
