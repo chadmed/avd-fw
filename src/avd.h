@@ -3,6 +3,7 @@
 
 #include "irq.h"
 #include "util.h"
+#include "syslog.h"
 
 #include "hw/reg/reg.h"
 #include "hw/tunables/tunables.h"

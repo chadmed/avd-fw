@@ -1,4 +1,5 @@
 #include "avd.h"
+#include "syslog.h"
 
 extern void _start(void);
 
@@ -67,6 +68,8 @@ void _start(void)
 	__asm volatile("cpsie i");
 
 	reg_write(CM3_BOOT, 1);
+
+	avd_log(AVD_LOG_INFO, 0, "avd booted");
 
 	while (1)
 		__asm volatile("wfi");

@@ -19,7 +19,7 @@ firmware_dir = get_option('libdir') / 'firmware/apple'
 
 objcopy = find_program('llvm-objcopy')
 
-sources = files(['src/avd.c', 'src/irq.c', 'src/util.c'])
+sources = files(['src/avd.c', 'src/irq.c', 'src/util.c', 'src/syslog.c'])
 ld_scripts = files('avd-cm3.ld')
 
 avd_variants = [
